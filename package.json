@@ -1,39 +1,40 @@
 {
-  "name": "acme-products-redux-style",
+  "name": "acmeproducts_wknd",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
-    "build:dev": "npm run build -- --watch ==mode=development",
-    "start:dev": "nodemon server --ignore dist/ --ignore src/ & npm run build:dev"
+    "start": "node server/index.js",
+    "build": "webpack --mode=\"production\"",
+    "build:dev": "webpack --mode=\"development\"",
+    "start:client": "webpack --watch",
+    "start:server": "node-dev --respawn server/index.js",
+    "start:dev": "npm run start:client & npm run start:server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "chalk": "^4.1.0",
+    "express": "^4.17.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.3",
+    "@babel/preset-react": "^7.10.1",
+    "babel-loader": "^8.1.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kwons90/acme-products-redux-style.git"
+    "url": "git+https://github.com/kwons90/AcmeProductsReduxWeekendProject.git"
   },
-  "author": "",
-  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/kwons90/acme-products-redux-style/issues"
+    "url": "https://github.com/kwons90/AcmeProductsReduxWeekendProject/issues"
   },
-  "homepage": "https://github.com/kwons90/acme-products-redux-style#readme",
-  "description": "",
-  "dependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/preset-react": "^7.9.1",
-    "axios": "^0.19.2",
-    "babel-loader": "^8.1.0",
-    "express": "^4.17.1",
-    "faker": "^4.1.0",
-    "pg": "^7.18.2",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-redux": "^7.2.0",
-    "react-router-dom": "^5.1.2",
-    "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0",
-    "sequelize": "^5.21.5",
-    "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.11"
-  }
+  "homepage": "https://github.com/kwons90/AcmeProductsReduxWeekendProject#readme",
+  "description": ""
 }
