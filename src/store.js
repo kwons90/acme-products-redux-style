@@ -4,16 +4,31 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 
 
 // ACTION TYPES
-export const GET_PRODUCTS = 'GET.PRODUCTS';
-export  const DELETE_PRODUCTS = 'DELETE.PRODUCTS';
-export  const ADD_PRODUCT_SUCESSFUL = 'ADD.PRODUCT_SUCCESSFUL'
-export  const ADD_PRODUCT_FAILURE = 'ADD.PRODUCT_FAILURE'
+const GET_PRODUCTS = 'GET.PRODUCTS';
+const DELETE_PRODUCTS = 'DELETE.PRODUCTS';
+const ADD_PRODUCT_SUCESSFUL = 'ADD.PRODUCT_SUCCESSFUL'
+const ADD_PRODUCT_FAILURE = 'ADD.PRODUCT_FAILURE'
 
+// ACTION SETTER
 export function gotProducts(products) {
   return {
     type: GET_PRODUCTS,
-    payload: {products}
+    payload: { products }
   };
+}
+
+export function deleteProducts(product) {
+  return {
+    type: DELETE_PRODUCTS,
+    payload: {product}
+  }
+}
+
+export function addProduct(product) {
+  return {
+    type: ADD_PRODUCT_SUCCESSFUL,
+    payload: {product}
+  }
 }
 
 const initialState = {
@@ -52,6 +67,6 @@ middleware.push(
   reduxthunk.withExtraArgument({})
 )
 
-const store = createStore(reducer,composeWithDevTools(applyMiddleware(...middleware)));
+const store = createStore(reducer, composeWithDevTools(applyMiddleware(...middleware)));
 
 export default store;

@@ -37170,6 +37170,10 @@ class Create extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
     this.handleOnChange = this.handleOnChange.bind(this);
   }
 
+  componentDidMount() {
+    console.log('products', this.props.products);
+  }
+
   handleOnChange(ev) {
     this.setState({
       text: ev.target.value
@@ -37200,11 +37204,13 @@ class Create extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
 
 }
 
-const mapState = state => ({});
+const mapState = state => ({
+  products: state.products
+});
 
 const mapDispatch = dispatch => ({
   handleOnSubmitDispatch: arg => {
-    dispatch(Object(_store_action__WEBPACK_IMPORTED_MODULE_3__["getProducts"])(arg));
+    dispatch(Object(_store_action__WEBPACK_IMPORTED_MODULE_3__["postProduct"])(arg));
   }
 }); // currying in js 
 
@@ -37304,6 +37310,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./store */ "./src/store.js");
 /* harmony import */ var react_redux__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react-redux */ "./node_modules/react-redux/es/index.js");
+/* harmony import */ var _store_action__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./store/action */ "./src/store/action.js");
+
 
 
 
@@ -37327,22 +37335,23 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
   }
 
   componentDidMount() {
-    axios__WEBPACK_IMPORTED_MODULE_6___default.a.get('/api/products').then(res => {
-      console.log(res);
-      this.setState({
-        products: res.data
-      });
+    _store__WEBPACK_IMPORTED_MODULE_7__["default"].dispatch(Object(_store_action__WEBPACK_IMPORTED_MODULE_9__["getProducts"])()).then(res => {
+      this.unsubscribe = _store__WEBPACK_IMPORTED_MODULE_7__["default"].subscribe(() => this.setState(_store__WEBPACK_IMPORTED_MODULE_7__["default"].getState()));
+    }).then(res => {
+      console.log('store.getstate', _store__WEBPACK_IMPORTED_MODULE_7__["default"].getState());
+      this.setState(_store__WEBPACK_IMPORTED_MODULE_7__["default"].getState());
     });
-    console.log(this.state.products);
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
   }
 
   render() {
-    const {
-      products
-    } = this.state;
+    console.log("in here", _store__WEBPACK_IMPORTED_MODULE_7__["default"].getState());
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["HashRouter"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Acme Products"), Object(_components_nav__WEBPACK_IMPORTED_MODULE_3__["default"])(this.state.products), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Switch"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
       path: '/products'
-    }, Object(_components_products__WEBPACK_IMPORTED_MODULE_5__["default"])(products)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
+    }, Object(_components_products__WEBPACK_IMPORTED_MODULE_5__["default"])(this.state.products)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
       path: '/create'
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_components_create__WEBPACK_IMPORTED_MODULE_4__["default"], null))));
   }
@@ -37359,16 +37368,14 @@ react_dom__WEBPACK_IMPORTED_MODULE_2___default.a.render( /*#__PURE__*/react__WEB
 /*!**********************!*\
   !*** ./src/store.js ***!
   \**********************/
-/*! exports provided: GET_PRODUCTS, DELETE_PRODUCTS, ADD_PRODUCT_SUCESSFUL, ADD_PRODUCT_FAILURE, gotProducts, default */
+/*! exports provided: gotProducts, deleteProducts, addProduct, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GET_PRODUCTS", function() { return GET_PRODUCTS; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DELETE_PRODUCTS", function() { return DELETE_PRODUCTS; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ADD_PRODUCT_SUCESSFUL", function() { return ADD_PRODUCT_SUCESSFUL; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ADD_PRODUCT_FAILURE", function() { return ADD_PRODUCT_FAILURE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "gotProducts", function() { return gotProducts; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deleteProducts", function() { return deleteProducts; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addProduct", function() { return addProduct; });
 /* harmony import */ var redux__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! redux */ "./node_modules/redux/es/redux.js");
 /* harmony import */ var redux_thunk__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! redux-thunk */ "./node_modules/redux-thunk/es/index.js");
 /* harmony import */ var redux_devtools_extension__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! redux-devtools-extension */ "./node_modules/redux-devtools-extension/index.js");
@@ -37380,12 +37387,29 @@ __webpack_require__.r(__webpack_exports__);
 const GET_PRODUCTS = 'GET.PRODUCTS';
 const DELETE_PRODUCTS = 'DELETE.PRODUCTS';
 const ADD_PRODUCT_SUCESSFUL = 'ADD.PRODUCT_SUCCESSFUL';
-const ADD_PRODUCT_FAILURE = 'ADD.PRODUCT_FAILURE';
+const ADD_PRODUCT_FAILURE = 'ADD.PRODUCT_FAILURE'; // ACTION SETTER
+
 function gotProducts(products) {
   return {
     type: GET_PRODUCTS,
     payload: {
       products
+    }
+  };
+}
+function deleteProducts(product) {
+  return {
+    type: DELETE_PRODUCTS,
+    payload: {
+      product
+    }
+  };
+}
+function addProduct(product) {
+  return {
+    type: ADD_PRODUCT_SUCCESSFUL,
+    payload: {
+      product
     }
   };
 }
@@ -37430,10 +37454,42 @@ const store = Object(redux__WEBPACK_IMPORTED_MODULE_0__["createStore"])(reducer,
 /*!*****************************!*\
   !*** ./src/store/action.js ***!
   \*****************************/
-/*! exports provided: getProducts */
-/***/ (function(module, exports) {
+/*! exports provided: postProduct, getProducts */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nSyntaxError: /Users/skwon/Documents/Fullstack/acme-products-redux-style/src/store/action.js: Invalid left-hand side in assignment expression (3:27)\n\n\u001b[0m \u001b[90m 1 | \u001b[39m\u001b[36mimport\u001b[39m {gotProducts} from \u001b[32m'../store.js'\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 2 | \u001b[39m\u001b[0m\n\u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 3 | \u001b[39m\u001b[36mexport\u001b[39m \u001b[36mconst\u001b[39m getProducts \u001b[33m=\u001b[39m async (arg) \u001b[33m=\u001b[39m ({dispatch}) \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[0m \u001b[90m   | \u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 4 | \u001b[39m    \u001b[36mtry\u001b[39m {\u001b[0m\n\u001b[0m \u001b[90m 5 | \u001b[39m        \u001b[36mconst\u001b[39m { name } \u001b[33m=\u001b[39m arg\u001b[33m;\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 6 | \u001b[39m        console\u001b[33m.\u001b[39mlog(\u001b[32m'arg'\u001b[39m\u001b[33m,\u001b[39m arg)\u001b[33m;\u001b[39m\u001b[0m\n    at Object._raise (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:757:17)\n    at Object.raiseWithData (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:750:17)\n    at Object.raise (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:744:17)\n    at Object.checkLVal (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:9334:16)\n    at Object.parseMaybeAssign (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:9496:12)\n    at Object.parseVar (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11862:26)\n    at Object.parseVarStatement (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11671:10)\n    at Object.parseStatementContent (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11270:21)\n    at Object.parseStatement (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11203:17)\n    at Object.parseExportDeclaration (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:12412:17)\n    at Object.maybeParseExportDeclaration (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:12368:31)\n    at Object.parseExport (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:12298:29)\n    at Object.parseStatementContent (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11307:27)\n    at Object.parseStatement (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11203:17)\n    at Object.parseBlockOrModuleBlockBody (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11778:25)\n    at Object.parseBlockBody (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11764:10)\n    at Object.parseTopLevel (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:11134:10)\n    at Object.parse (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:12836:10)\n    at parse (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/parser/lib/index.js:12889:38)\n    at parser (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/core/lib/parser/index.js:54:34)\n    at parser.next (<anonymous>)\n    at normalizeFile (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/core/lib/transformation/normalize-file.js:93:38)\n    at normalizeFile.next (<anonymous>)\n    at run (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/core/lib/transformation/index.js:31:50)\n    at run.next (<anonymous>)\n    at Function.transform (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/@babel/core/lib/transform.js:27:41)\n    at transform.next (<anonymous>)\n    at step (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/gensync/index.js:254:32)\n    at /Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/gensync/index.js:266:13\n    at async.call.result.err.err (/Users/skwon/Documents/Fullstack/acme-products-redux-style/node_modules/gensync/index.js:216:11)");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "postProduct", function() { return postProduct; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getProducts", function() { return getProducts; });
+/* harmony import */ var _store_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../store.js */ "./src/store.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+
+
+const postProduct = arg => async dispatch => {
+  try {
+    const {
+      name
+    } = arg;
+    console.log('arg', arg);
+    const response = await axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('api/products', {
+      name
+    });
+    dispatch(Object(_store_js__WEBPACK_IMPORTED_MODULE_0__["addProduct"])(response.data));
+  } catch (err) {
+    console.log('error while posting product', err);
+  }
+};
+const getProducts = () => async dispatch => {
+  try {
+    console.log('getProducts called');
+    const response = await axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/api/products');
+    console.log('getProducts called', response);
+    dispatch(Object(_store_js__WEBPACK_IMPORTED_MODULE_0__["gotProducts"])(response.data));
+  } catch (err) {
+    console.log('error while posting product', err);
+  }
+};
 
 /***/ })
 

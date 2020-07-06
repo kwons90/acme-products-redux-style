@@ -7,7 +7,7 @@ import Products from './components/products'
 import axios from 'axios';
 import store from './store';
 import {Provider} from 'react-redux'
-
+import {getProducts} from './store/action'
 
 class App extends Component {
     // why doest below throw an error?
@@ -20,22 +20,27 @@ class App extends Component {
             products: []
         }
     }
-    componentDidMount() {
-        axios.get('/api/products')
-        .then(res =>{
-            console.log(res)
-            this.setState({products: res.data})
+    componentDidMount(){
+        store.dispatch(getProducts())
+        .then(res => {
+        this.unsubscribe = store.subscribe(() => this.setState(store.getState()));
         })
-        console.log(this.state.products)
+        .then(res => {
+        console.log('store.getstate',store.getState())
+        this.setState(store.getState())
+        })
     }
+    componentWillUnmount() {
+        this.unsubscribe()
+      }
     render() {
-        const {products} = this.state
+        console.log("in here",store.getState())
         return (
             <HashRouter>
                 <h1>Acme Products</h1>
                 {Nav(this.state.products)}
                 <Switch>
-                    <Route path={'/products'}>{Products(products)}</Route>
+                    <Route path={'/products'}>{Products(this.state.products)}</Route>
                     <Route path={'/create'}><Create /></Route>
                 </Switch>
             </HashRouter>

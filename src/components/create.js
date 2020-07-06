@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 import {connect} from 'react-redux'
-import { getProducts } from '../store/action'
+import { postProduct } from '../store/action'
 
 class Create extends Component {
     constructor() {
@@ -11,6 +11,9 @@ class Create extends Component {
         }
         this.handleOnSubmit = this.handleOnSubmit.bind(this)
         this.handleOnChange = this.handleOnChange.bind(this)
+    }
+    componentDidMount() {
+        console.log('products', this.props.products);
     }
     handleOnChange(ev) {
         this.setState({ text: ev.target.value })
@@ -37,13 +40,14 @@ class Create extends Component {
 }
 
 const mapState = (state) => ({
-
+    products: state.products,
 })
 
 const mapDispatch = (dispatch) => ({ 
     handleOnSubmitDispatch: arg => {
-        dispatch(getProducts(arg))
+        dispatch(postProduct(arg))
     }
 })
+
 // currying in js 
 export default connect(mapState, mapDispatch)(Create)
